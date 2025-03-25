@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OrangeTheory DriTri Challenge</title>
+    <style>
+        /* Base styles */
+        :root {
+            --otf-orange: #F26925;
+            --otf-dark: #1A1A1A;
+            --otf-light: #F2F2F2;
+            --otf-blue: #5271FF;
+            --otf-green: #7ED321;
+            --otf-yellow: #F8E71C;
+            --otf-red: #D0021B;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background-color: var(--otf-dark);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+            touch-action: manipulation;
+            position: fixed;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 900px;
+            background-color: white;
+            color: black;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header {
+            background-color: var(--otf-orange);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .back-button {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        /* Screen Styles */
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        /* Start Screen */
+        #start-screen {
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            background-color: var(--otf-dark);
+            color: white;
+            padding: 20px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background-color: var(--otf-orange);
+            border-radius: 50%;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(242, 105, 37, 0.5);
+        }
+        
+        .cta-banner {
+            background-color: var(--otf-orange);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        .cta-heading {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .cta-text {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .description {
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+        
+        .description strong {
+            color: var(--otf-orange);
+        }
+        
+        .btn {
+            background-color: var(--otf-orange);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px 0;
+            text-transform: uppercase;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #666;
+            color: white;
+        }
+        
+        /* Game Screen */
+        #game-screen {
+            justify-content: space-between;
+            background-color: #f7f7f7;
+            height: 100%;
+        }
+        
+        .compact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--otf-orange);
+            padding: 5px 10px;
+            color: white;
+        }
+        
+        .phase-indicator {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .timer-display {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .heart-rate-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+        
+        .splat-icon {
+            font-size: 18px;
+            margin-right: 2px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--otf-orange);
+            width: 0%;
+            transition: width 1s linear;
+        }
+        
+        .game-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .exercise-container {
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            flex: 1;
+        }
+        
+        .exercise-header {
+            padding: 10px;
+            background-color: var(--otf-orange);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .exercise-instructions {
+            padding: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .exercise-visual {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .exercise-icon {
+            font-size: 60px;
+        }
+        
+        .exercise-counter {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: var(--otf-orange);
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        .interaction-area {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: auto;
+            margin-bottom: 10px;
+        }
+        
+        .action-button {
+            width: 90px;
+            height: 90px;
+            background-color: var(--otf-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .action-button:active {
+            transform: scale(0.95);
+        }
+        
+        .score-display {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+            background-color: var(--otf-orange);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .multiplier-display {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #666;
+        }
+        
+        .feedback-text {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* Results Screen */
+        #results-screen {
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            background-color: var(--otf-dark);
+            color: white;
+            position: relative;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+        
+        .results-header {
+            width: 100%;
+            background-color: var(--otf-orange);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .results-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .final-score {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .otf-summary {
+            width: 90%;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 0 auto 20px;
+        }
+        
+        .summary-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--otf-orange);
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        .zone-chart {
+            display: flex;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .zone-segment {
+            height: 100%;
+        }
+        
+        .zone-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        
+        .zone-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .zone-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .achievement-badge {
+            background-color: var(--otf-orange);
+            color: white;
+            font-weight: bold;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 15px 0;
+            font-size: 16px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .score-breakdown {
+            width: 90%;
+            margin: 0 auto 20px;
+        }
+        
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--otf-orange);
+            font-size: 14px;
+        }
+        
+        .email-form {
+            width: 90%;
+            margin: 10px auto;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .email-form h3 {
+            margin-bottom: 10px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .email-form p {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+        
+        .email-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            margin: 10px 0;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .email-input:focus {
+            outline: 2px solid var(--otf-orange);
+        }
+        
+        .share-container {
+            margin-top: 15px;
+            width: 90%;
+        }
+        
+        .share-preview {
+            width: 100%;
+            height: 180px;
+            background-color: var(--otf-orange);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .share-preview-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(242, 105, 37, 0.8) 0%, rgba(242, 105, 37, 0.9) 100%);
+        }
+        
+        .share-logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .share-score {
+            font-size: 30px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .share-btn {
+            flex: 1;
+            max-width: 180px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .share-btn.instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+        }
+        
+        .share-btn.challenge {
+            background-color: white;
+            color: var(--otf-dark);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            color: black;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--otf-orange);
+            margin-bottom: 15px;
+        }
+        
+        .modal-message {
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .fade-out {
+            animation: fadeOut 0.5s;
+        }
+        
+        @keyframes moveUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        
+        .move-up {
+            animation: moveUp 0.5s forwards;
+        }
+        
+        /* Splat point animation */
+        @keyframes splat {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .splat-anim {
+            animation: splat 0.3s forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="header">
+            <button class="back-button" id="back-button">←</button>
+            <div>OrangeTheory DriTri Challenge</div>
+        </div>
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="logo">OTF</div>
+            <div class="cta-banner">
+                <div class="cta-heading">ATTENTION ALL MEMBERS!</div>
+                <div class="cta-text">Take the 60-Second DriTri Challenge!</div>
+            </div>
+            <div>
+                <h2>DriTri Challenge</h2>
+                <p class="description">
+                    Experience the ultimate OrangeTheory DriTri challenge! 
+                    Master all three phases: Rowing, Floor Exercises, and Treadmill.
+                    Stay in the Orange Zone for maximum splat points!
+                </p>
+                <p class="description">
+                    <strong>Just 60 seconds to complete!</strong><br>
+                    Top 3 players by March 31st win a FREE DriTri entry!
+                </p>
+            </div>
+            <button id="start-button" class="btn">Start Challenge</button>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="compact-header">
+                <div class="phase-indicator" id="compact-phase">ROWING</div>
+                <div class="timer-display" id="compact-timer">15s</div>
+                <div class="heart-rate-indicator">
+                    <span class="splat-icon">💪</span>
+                    <span id="compact-hr">65%</span>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            
+            <div class="game-content">
+                <div class="exercise-container">
+                    <div class="exercise-header" id="exercise-name">Rowing</div>
+                    <div class="exercise-instructions" id="exercise-instructions">
+                        Tap the buttons in rhythm to row! Alternate between left and right.
+                    </div>
+                    <div class="exercise-visual">
+                        <div class="exercise-icon" id="exercise-visual">🚣</div>
+                        <div class="exercise-counter" id="exercise-counter">0</div>
+                        <div class="feedback-text" id="feedback-text">Perfect!</div>
+                    </div>
+                </div>
+                
+                <div class="interaction-area">
+                    <div class="action-button" id="left-button">LEFT</div>
+                    <div class="action-button" id="right-button">RIGHT</div>
+                </div>
+                
+                <div class="score-display" id="score-display">Score: 0</div>
+                <div class="multiplier-display" id="multiplier-display">Multiplier: x1</div>
+            </div>
+        </div>
+        
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <div class="results-header">
+                <div class="results-title">Great Job!</div>
+                <div class="final-score" id="final-score">0</div>
+            </div>
+            
+            <div class="achievement-badge" id="achievement-badge">Orange Excellence!</div>
+            
+            <div class="otf-summary">
+                <div class="summary-title">YOUR WORKOUT SUMMARY</div>
+                
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="splat-points">12</div>
+                        <div class="stat-label">SPLAT POINTS</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="calories">432</div>
+                        <div class="stat-label">CALORIES</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avg-hr">82%</div>
+                        <div class="stat-label">AVG HR</div>
+                    </div>
+                </div>
+                
+                <div>HEART RATE ZONES</div>
+                <div class="zone-chart">
+                    <div class="zone-segment" id="zone-grey" style="width: 5%; background-color: #B4B4B4;"></div>
+                    <div class="zone-segment" id="zone-blue" style="width: 15%; background-color: #5271FF;"></div>
+                    <div class="zone-segment" id="zone-green" style="width: 30%; background-color: #7ED321;"></div>
+                    <div class="zone-segment" id="zone-yellow" style="width: 20%; background-color: #F8E71C;"></div>
+                    <div class="zone-segment" id="zone-orange" style="width: 20%; background-color: #F26925;"></div>
+                    <div class="zone-segment" id="zone-red" style="width: 10%; background-color: #D0021B;"></div>
+                </div>
+                
+                <div class="zone-labels">
+                    <div class="zone-item">
+                        <div class="zone-color" style="background-color: #F26925;"></div>
+                        <span id="orange-zone-time">12 min</span>
+                    </div>
+                    <div class="zone-item">
+                        <div class="zone-color" style="background-color: #D0021B;"></div>
+                        <span id="red-zone-time">5 min</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="email-form">
+                <h3>Enter your email to join the leaderboard!</h3>
+                <p>Top 3 players by March 31st win a FREE DriTri entry!</p>
+                <input type="email" class="email-input" placeholder="youremail@example.com" id="email-input">
+                <button id="submit-button" class="btn">Submit Score</button>
+            </div>
+            
+            <div class="score-breakdown">
+                <div class="breakdown-item">
+                    <span>Rowing:</span>
+                    <span id="rowing-score">0</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Floor Exercises:</span>
+                    <span id="floor-score">0</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Treadmill:</span>
+                    <span id="treadmill-score">0</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Perfect Reps:</span>
+                    <span id="perfect-count">0</span>
+                </div>
+            </div>
+            
+            <div class="share-container">
+                <div class="share-preview">
+                    <div class="share-preview-content">
+                        <div class="share-logo">OrangeTheory DriTri Challenge</div>
+                        <div class="share-score" id="share-score">1250</div>
+                        <div id="share-achievement">Orange Excellence!</div>
+                        <div>Can you beat my score?</div>
+                    </div>
+                </div>
+                
+                <div class="share-buttons">
+                    <button id="challenge-button" class="share-btn challenge">Challenge a Friend</button>
+                    <button id="instagram-button" class="share-btn instagram">Share on Instagram</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Modal -->
+        <div id="email-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">Great Job!</div>
+                <p class="modal-message">
+                    Your score of <span id="modal-score">0</span> has been recorded.
+                    Enter your email to join the leaderboard and get a chance to win a FREE DriTri entry!
+                </p>
+                <input type="email" class="email-input" placeholder="youremail@example.com" id="modal-email-input">
+                <div class="modal-buttons">
+                    <button id="modal-submit" class="btn">Submit</button>
+                    <button id="modal-skip" class="btn btn-secondary">Skip</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Game Configuration
+        const PHASE_CONFIG = [
+            {
+                name: "ROWING",
+                duration: 15,
+                instructions: "Tap the buttons in rhythm to row! Alternate between left and right.",
+                visual: "🚣",
+                requiredPattern: "alternate", // Requires alternating left-right taps
+                targetSpeed: 1200, // ms between optimal taps (slightly faster)
+                repsGoal: 10,
+                caloriesPerRep: 8
+            },
+            {
+                name: "PUSH-UPS",
+                duration: 15,
+                instructions: "Tap either button in rhythm to do push-ups!",
+                visual: "💪",
+                requiredPattern: "any", // Any tap works
+                targetSpeed: 1000, // ms between optimal taps (slightly faster)
+                repsGoal: 10,
+                caloriesPerRep: 5
+            },
+            {
+                name: "SQUATS",
+                duration: 15,
+                instructions: "Press and hold either button, then release to complete a squat!",
+                visual: "🏋️",
+                requiredPattern: "hold", // Requires press and hold
+                targetSpeed: 1500, // ms for optimal hold time (slightly faster)
+                repsGoal: 7,
+                caloriesPerRep: 10
+            },
+            {
+                name: "TREADMILL",
+                duration: 15,
+                instructions: "Tap alternating buttons quickly to run!",
+                visual: "🏃",
+                requiredPattern: "alternate-fast", // Requires fast alternating taps
+                targetSpeed: 700, // ms between optimal taps (slightly faster)
+                repsGoal: 15,
+                caloriesPerRep: 6
+            }
+        ];
+        
+        // Achievement Thresholds
+        const ACHIEVEMENTS = [
+            { name: "DriTri Challenger", threshold: 0, color: "#999999" },
+            { name: "Orange Rookie", threshold: 1000, color: "#CD7F32" },
+            { name: "Splat Master", threshold: 2000, color: "#C0C0C0" },
+            { name: "All Out Champion", threshold: 3000, color: "#FFD700" },
+            { name: "Orange Excellence", threshold: 4000, color: "#F26925" }
+        ];
+        
+        // Game State
+        const gameState = {
+            currentPhase: 0,
+            timeRemaining: 0,
+            score: 0,
+            phaseScores: [0, 0, 0, 0],
+            heartRate: 65,
+            heartRateHistory: [],
+            timeInZones: {
+                grey: 0,
+                blue: 0,
+                green: 0,
+                yellow: 0,
+                orange: 0,
+                red: 0
+            },
+            orangeZoneTime: 0,
+            redZoneTime: 0,
+            perfectReps: 0,
+            goodReps: 0,
+            totalReps: 0,
+            totalCalories: 0,
+            currentMultiplier: 1,
+            consecutiveGoodReps: 0,
+            isPlaying: false,
+            lastActionTime: 0,
+            lastActionButton: null, // 'left' or 'right'
+            holdStartTime: 0,
+            isHolding: false,
+            achievement: ""
+        };
+        
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const emailModal = document.getElementById('email-modal');
+        
+        const startButton = document.getElementById('start-button');
+        const backButton = document.getElementById('back-button');
+        const leftButton = document.getElementById('left-button');
+        const rightButton = document.getElementById('right-button');
+        const submitButton = document.getElementById('submit-button');
+        const challengeButton = document.getElementById('challenge-button');
+        const instagramButton = document.getElementById('instagram-button');
+        const modalSubmit = document.getElementById('modal-submit');
+        const modalSkip = document.getElementById('modal-skip');
+        
+        const compactPhase = document.getElementById('compact-phase');
+        const compactTimer = document.getElementById('compact-timer');
+        const compactHR = document.getElementById('compact-hr');
+        const progressFill = document.getElementById('progress-fill');
+        const exerciseName = document.getElementById('exercise-name');
+        const exerciseInstructions = document.getElementById('exercise-instructions');
+        const exerciseVisual = document.getElementById('exercise-visual');
+        const exerciseCounter = document.getElementById('exercise-counter');
+        const feedbackText = document.getElementById('feedback-text');
+        const scoreDisplay = document.getElementById('score-display');
+        const multiplierDisplay = document.getElementById('multiplier-display');
+        
+        const finalScore = document.getElementById('final-score');
+        const achievementBadge = document.getElementById('achievement-badge');
+        const splatPoints = document.getElementById('splat-points');
+        const calories = document.getElementById('calories');
+        const avgHR = document.getElementById('avg-hr');
+        const zoneGrey = document.getElementById('zone-grey');
+        const zoneBlue = document.getElementById('zone-blue');
+        const zoneGreen = document.getElementById('zone-green');
+        const zoneYellow = document.getElementById('zone-yellow');
+        const zoneOrange = document.getElementById('zone-orange');
+        const zoneRed = document.getElementById('zone-red');
+        const orangeZoneTime = document.getElementById('orange-zone-time');
+        const redZoneTime = document.getElementById('red-zone-time');
+        const rowingScore = document.getElementById('rowing-score');
+        const floorScore = document.getElementById('floor-score');
+        const treadmillScore = document.getElementById('treadmill-score');
+        const perfectCount = document.getElementById('perfect-count');
+        const emailInput = document.getElementById('email-input');
+        const modalEmailInput = document.getElementById('modal-email-input');
+        const modalScore = document.getElementById('modal-score');
+        const shareScore = document.getElementById('share-score');
+        const shareAchievement = document.getElementById('share-achievement');
+        
+        // Game Intervals and Timers
+        let gameInterval;
+        let heartRateInterval;
+        let optimalTapInterval;
+        
+        // Initialize the game
+        function init() {
+            // Hide back button on start screen
+            backButton.style.display = 'none';
+            
+            // Add event listeners
+            startButton.addEventListener('click', startGame);
+            backButton.addEventListener('click', goBack);
+            submitButton.addEventListener('click', submitScore);
+            challengeButton.addEventListener('click', challengeFriend);
+            instagramButton.addEventListener('click', shareToInstagram);
+            modalSubmit.addEventListener('click', submitModalEmail);
+            modalSkip.addEventListener('click', closeEmailModal);
+            
+            // Action button event listeners
+            setupButtonListeners();
+        }
+        
+        // Set up button listeners for different exercise types
+        function setupButtonListeners() {
+            // Left button events
+            leftButton.addEventListener('mousedown', () => handleButtonAction('left', 'down'));
+            leftButton.addEventListener('mouseup', () => handleButtonAction('left', 'up'));
+            leftButton.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); 
+                handleButtonAction('left', 'down'); 
+            }, { passive: false });
+            leftButton.addEventListener('touchend', (e) => { 
+                e.preventDefault(); 
+                handleButtonAction('left', 'up'); 
+            }, { passive: false });
+            
+            // Right button events
+            rightButton.addEventListener('mousedown', () => handleButtonAction('right', 'down'));
+            rightButton.addEventListener('mouseup', () => handleButtonAction('right', 'up'));
+            rightButton.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); 
+                handleButtonAction('right', 'down'); 
+            }, { passive: false });
+            rightButton.addEventListener('touchend', (e) => { 
+                e.preventDefault(); 
+                handleButtonAction('right', 'up'); 
+            }, { passive: false });
+        }
+        
+        // Show specified screen
+        function showScreen(screenId) {
+            // Hide all screens
+            startScreen.classList.remove('active');
+            gameScreen.classList.remove('active');
+            resultsScreen.classList.remove('active');
+            
+            // Show requested screen
+            document.getElementById(screenId).classList.add('active');
+            
+            // Show/hide back button
+            if (screenId === 'start-screen') {
+                backButton.style.display = 'none';
+            } else {
+                backButton.style.display = 'block';
+            }
+        }
+        
+        // Go back to previous screen
+        function goBack() {
+            // If in game, confirm before quitting
+            if (gameState.isPlaying) {
+                if (confirm('Are you sure you want to quit the game?')) {
+                    stopGame();
+                    showScreen('start-screen');
+                }
+            } else {
+                showScreen('start-screen');
+            }
+        }
+        
+        // Start the game
+        function startGame() {
+            // Reset game state
+            gameState.currentPhase = 0;
+            gameState.score = 0;
+            gameState.phaseScores = [0, 0, 0, 0];
+            gameState.heartRate = 65;
+            gameState.heartRateHistory = [];
+            gameState.timeInZones = {
+                grey: 0,
+                blue: 0,
+                green: 0,
+                yellow: 0,
+                orange: 0,
+                red: 0
+            };
+            gameState.orangeZoneTime = 0;
+            gameState.redZoneTime = 0;
+            gameState.perfectReps = 0;
+            gameState.goodReps = 0;
+            gameState.totalReps = 0;
+            gameState.totalCalories = 0;
+            gameState.currentMultiplier = 1;
+            gameState.consecutiveGoodReps = 0;
+            gameState.isPlaying = true;
+            gameState.lastActionTime = 0;
+            gameState.lastActionButton = null;
+            
+            // Show game screen
+            showScreen('game-screen');
+            
+            // Start first phase
+            startPhase(0);
+        }
+        
+        // Start specified phase
+        function startPhase(phaseIndex) {
+            const phase = PHASE_CONFIG[phaseIndex];
+            
+            // Update UI
+            compactPhase.textContent = phase.name;
+            exerciseName.textContent = phase.name;
+            exerciseInstructions.textContent = phase.instructions;
+            exerciseVisual.textContent = phase.visual;
+            exerciseCounter.textContent = "0";
+            gameState.timeRemaining = phase.duration;
+            compactTimer.textContent = `${gameState.timeRemaining}s`;
+            progressFill.style.width = '0%';
+            scoreDisplay.textContent = `Score: ${gameState.score}`;
+            multiplierDisplay.textContent = `Multiplier: x${gameState.currentMultiplier}`;
+            
+            // Reset action state
+            gameState.lastActionTime = Date.now();
+            gameState.lastActionButton = null;
+            gameState.isHolding = false;
+            gameState.totalReps = 0;
+            
+            // Clear any existing intervals
+            if (gameInterval) clearInterval(gameInterval);
+            if (heartRateInterval) clearInterval(heartRateInterval);
+            if (optimalTapInterval) clearInterval(optimalTapInterval);
+            
+            // Start game timer
+            gameInterval = setInterval(updateGame, 1000);
+            
+            // Start heart rate simulation
+            heartRateInterval = setInterval(updateHeartRate, 500);
+            
+            // Handle button appearance for different exercises
+            updateButtonsForPhase(phaseIndex);
+        }
+        
+        // Update button appearance and behavior based on phase
+        function updateButtonsForPhase(phaseIndex) {
+            const phase = PHASE_CONFIG[phaseIndex];
+            
+            // Reset buttons
+            leftButton.textContent = "LEFT";
+            rightButton.textContent = "RIGHT";
+            
+            if (phase.name === "PUSH-UPS") {
+                leftButton.textContent = "PUSH";
+                rightButton.textContent = "PUSH";
+            } else if (phase.name === "SQUATS") {
+                leftButton.textContent = "HOLD";
+                rightButton.textContent = "HOLD";
+            } else if (phase.name === "TREADMILL") {
+                leftButton.textContent = "LEFT";
+                rightButton.textContent = "RIGHT";
+            }
+        }
+        
+        // Update game state (called every second)
+        function updateGame() {
+            // Decrement timer
+            gameState.timeRemaining--;
+            compactTimer.textContent = `${gameState.timeRemaining}s`;
+            
+            // Update progress bar
+            const phase = PHASE_CONFIG[gameState.currentPhase];
+            const progress = (phase.duration - gameState.timeRemaining) / phase.duration * 100;
+            progressFill.style.width = `${progress}%`;
+            
+            // Record heart rate zone for this second
+            recordHeartRateZone();
+            
+            // Check if phase is complete
+            if (gameState.timeRemaining <= 0) {
+                // Move to next phase or end game
+                gameState.currentPhase++;
+                
+                if (gameState.currentPhase < PHASE_CONFIG.length) {
+                    startPhase(gameState.currentPhase);
+                } else {
+                    endGame();
+                }
+            }
+        }
+        
+        // Record current heart rate zone
+        function recordHeartRateZone() {
+            gameState.heartRateHistory.push(gameState.heartRate);
+            
+            if (gameState.heartRate < 60) {
+                gameState.timeInZones.grey++;
+            } else if (gameState.heartRate < 70) {
+                gameState.timeInZones.blue++;
+            } else if (gameState.heartRate < 84) {
+                gameState.timeInZones.green++;
+            } else if (gameState.heartRate < 92) {
+                gameState.timeInZones.orange++;
+                gameState.orangeZoneTime++;
+            } else {
+                gameState.timeInZones.red++;
+                gameState.redZoneTime++;
+            }
+        }
+        
+        // Update heart rate simulation
+        function updateHeartRate() {
+            // Natural decay (heart rate drops if no activity)
+            gameState.heartRate = Math.max(55, gameState.heartRate - 0.5);
+            
+            // Update UI
+            compactHR.textContent = `${Math.round(gameState.heartRate)}%`;
+            
+            // Update heart rate color
+            updateHeartRateZoneDisplay();
+        }
+        
+        // Update heart rate zone display
+        function updateHeartRateZoneDisplay() {
+            // Reset styles
+            compactHR.style.color = "white";
+            
+            // Add zone-specific color
+            if (gameState.heartRate < 60) {
+                // Grey zone - no special color
+            } else if (gameState.heartRate < 70) {
+                compactHR.style.color = "#5271FF"; // Blue
+            } else if (gameState.heartRate < 84) {
+                compactHR.style.color = "#7ED321"; // Green
+            } else if (gameState.heartRate <= 91) {
+                compactHR.style.color = "#F26925"; // Orange
+                
+                // Pulse effect for orange zone
+                compactHR.classList.add('pulse');
+                setTimeout(() => {
+                    compactHR.classList.remove('pulse');
+                }, 500);
+            } else {
+                compactHR.style.color = "#D0021B"; // Red
+            }
+        }
+        
+        // Handle button actions
+        function handleButtonAction(button, action) {
+            if (!gameState.isPlaying) return;
+            
+            const phase = PHASE_CONFIG[gameState.currentPhase];
+            const currentTime = Date.now();
+            
+            // Increase heart rate with each action
+            increaseHeartRate();
+            
+            if (phase.requiredPattern === "hold") {
+                // Handle hold pattern (for squats)
+                if (action === "down") {
+                    // Start hold
+                    gameState.holdStartTime = currentTime;
+                    gameState.isHolding = true;
+                    
+                    // Visual feedback
+                    if (button === "left") {
+                        leftButton.style.transform = "scale(0.95)";
+                    } else {
+                        rightButton.style.transform = "scale(0.95)";
+                    }
+                    
+                } else if (action === "up" && gameState.isHolding) {
+                    // End hold
+                    const holdTime = currentTime - gameState.holdStartTime;
+                    gameState.isHolding = false;
+                    
+                    // Reset button appearance
+                    leftButton.style.transform = "";
+                    rightButton.style.transform = "";
+                    
+                    // Check if hold was long enough
+                    if (holdTime >= 500) { // At least half a second
+                        // Calculate accuracy based on target hold time
+                        const targetHoldTime = phase.targetSpeed;
+                        const accuracy = Math.abs(holdTime - targetHoldTime);
+                        
+                        if (accuracy < targetHoldTime * 0.1) { // Within 10% of target
+                            // Perfect hold
+                            completeRep(true);
+                        } else if (accuracy < targetHoldTime * 0.25) { // Within 25% of target
+                            // Good hold
+                            completeRep(false);
+                        } else {
+                            // Completed but not great timing
+                            showFeedback("OK!", "#F8E71C");
+                            awardPoints(10, false);
+                            updateExerciseCounter(1);
+                        }
+                    }
+                }
+                
+            } else if (action === "down") { // Only process down actions for tap patterns
+                if (phase.requiredPattern === "alternate" || phase.requiredPattern === "alternate-fast") {
+                    // Check if alternating correctly
+                    if (gameState.lastActionButton === button) {
+                        // Same button pressed twice - not alternating
+                        showFeedback("ALTERNATE!", "#D0021B");
+                    } else {
+                        // Properly alternating
+                        const timeSinceLastAction = currentTime - gameState.lastActionTime;
+                        
+                        // For first tap, just record it
+                        if (gameState.lastActionButton === null) {
+                            showFeedback("GO!", "#F26925");
+                        } else {
+                            // Check timing against target speed
+                            const targetSpeed = phase.targetSpeed;
+                            
+                            if (Math.abs(timeSinceLastAction - targetSpeed) < targetSpeed * 0.15) {
+                                // Perfect timing
+                                completeRep(true);
+                            } else if (Math.abs(timeSinceLastAction - targetSpeed) < targetSpeed * 0.3) {
+                                // Good timing
+                                completeRep(false);
+                            } else {
+                                // Completed but not great timing
+                                showFeedback("OK!", "#F8E71C");
+                                awardPoints(10, false);
+                                updateExerciseCounter(1);
+                            }
+                        }
+                    }
+                    
+                } else if (phase.requiredPattern === "any") {
+                    // Any tap works (push-ups)
+                    const timeSinceLastAction = currentTime - gameState.lastActionTime;
+                    
+                    // Skip time check for first tap
+                    if (gameState.lastActionTime === 0) {
+                        showFeedback("GO!", "#F26925");
+                        awardPoints(10, false);
+                        updateExerciseCounter(1);
+                    } else {
+                        // Check timing against target speed
+                        const targetSpeed = phase.targetSpeed;
+                        
+                        if (Math.abs(timeSinceLastAction - targetSpeed) < targetSpeed * 0.15) {
+                            // Perfect timing
+                            completeRep(true);
+                        } else if (Math.abs(timeSinceLastAction - targetSpeed) < targetSpeed * 0.3) {
+                            // Good timing
+                            completeRep(false);
+                        } else {
+                            // Completed but not great timing
+                            showFeedback("OK!", "#F8E71C");
+                            awardPoints(10, false);
+                            updateExerciseCounter(1);
+                        }
+                    }
+                }
+                
+                // Update last action info
+                gameState.lastActionTime = currentTime;
+                gameState.lastActionButton = button;
+                
+                // Button feedback
+                if (button === "left") {
+                    leftButton.classList.add('pulse');
+                    setTimeout(() => {
+                        leftButton.classList.remove('pulse');
+                    }, 200);
+                } else {
+                    rightButton.classList.add('pulse');
+                    setTimeout(() => {
+                        rightButton.classList.remove('pulse');
+                    }, 200);
+                }
+            }
+        }
+        
+        // Process a successful rep
+        function completeRep(isPerfect) {
+            const phase = PHASE_CONFIG[gameState.currentPhase];
+            
+            if (isPerfect) {
+                showFeedback("PERFECT!", "#F26925");
+                awardPoints(50, true);
+                gameState.perfectReps++;
+            } else {
+                showFeedback("GREAT!", "#7ED321");
+                awardPoints(25, false);
+                gameState.goodReps++;
+            }
+            
+            // Update counter
+            updateExerciseCounter(1);
+            
+            // Add calories
+            gameState.totalCalories += phase.caloriesPerRep;
+            
+            // Provide haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(isPerfect ? 50 : 25);
+            }
+        }
+        
+        // Update exercise counter
+        function updateExerciseCounter(increment) {
+            gameState.totalReps += increment;
+            exerciseCounter.textContent = gameState.totalReps;
+            
+            // Check if goal reached
+            const phase = PHASE_CONFIG[gameState.currentPhase];
+            if (gameState.totalReps >= phase.repsGoal) {
+                // Bonus for reaching goal
+                awardPoints(200, false);
+                exerciseCounter.classList.add('pulse');
+                setTimeout(() => {
+                    exerciseCounter.classList.remove('pulse');
+                }, 500);
+            }
+        }
+        
+        // Show feedback text
+        function showFeedback(text, color) {
+            feedbackText.textContent = text;
+            feedbackText.style.color = color;
+            feedbackText.style.opacity = "1";
+            
+            // Make feedback element move up and fade out
+            feedbackText.classList.remove('move-up');
+            void feedbackText.offsetWidth; // Trigger reflow
+            feedbackText.classList.add('move-up');
+            
+            // Create a new feedback element for next feedback
+            setTimeout(() => {
+                feedbackText.style.opacity = "0";
+                feedbackText.classList.remove('move-up');
+            }, 500);
+        }
+        
+        // Award points
+        function awardPoints(basePoints, isPerfect) {
+            // Increase consecutive hits
+            gameState.consecutiveGoodReps += isPerfect ? 2 : 1;
+            updateMultiplier();
+            
+            // Apply multiplier
+            const points = basePoints * gameState.currentMultiplier;
+            
+            // Add to score
+            gameState.score += points;
+            gameState.phaseScores[gameState.currentPhase] += points;
+            
+            // Update display
+            scoreDisplay.textContent = `Score: ${gameState.score}`;
+            
+            // Animate score display
+            scoreDisplay.classList.add('pulse');
+            setTimeout(() => {
+                scoreDisplay.classList.remove('pulse');
+            }, 300);
+        }
+        
+        // Update multiplier based on consecutive hits
+        function updateMultiplier() {
+            // Calculate multiplier (maxes out at 4x)
+            const newMultiplier = Math.min(4, 1 + Math.floor(gameState.consecutiveGoodReps / 5));
+            
+            // Only update if changed
+            if (newMultiplier !== gameState.currentMultiplier) {
+                gameState.currentMultiplier = newMultiplier;
+                multiplierDisplay.textContent = `Multiplier: x${gameState.currentMultiplier}`;
+                
+                // Animate if multiplier increased
+                multiplierDisplay.classList.add('pulse');
+                setTimeout(() => {
+                    multiplierDisplay.classList.remove('pulse');
+                }, 300);
+            }
+        }
+        
+        // Increase heart rate
+        function increaseHeartRate() {
+            // Increase heart rate with each action
+            gameState.heartRate = Math.min(95, gameState.heartRate + 1);
+            
+            // Update UI
+            compactHR.textContent = `${Math.round(gameState.heartRate)}%`;
+            
+            // Update heart rate zone display
+            updateHeartRateZoneDisplay();
+        }
+        
+        // End the game
+        function endGame() {
+            // Stop all intervals
+            stopGame();
+            
+            // Determine achievement
+            determineAchievement();
+            
+            // Calculate final stats
+            calculateFinalStats();
+            
+            // Update results screen
+            updateResultsScreen();
+            
+            // Show email modal first
+            showEmailModal();
+        }
+        
+        // Calculate final statistics
+        function calculateFinalStats() {
+            // Calculate average heart rate
+            const sum = gameState.heartRateHistory.reduce((a, b) => a + b, 0);
+            const avgHeartRate = Math.round(sum / gameState.heartRateHistory.length) || 65;
+            
+            // Calculate splat points (1 point per minute in orange/red zones)
+            const splatPointsEarned = Math.floor((gameState.timeInZones.orange + gameState.timeInZones.red) / 60) || 0;
+            
+            // Calculate zone percentages
+            const totalTime = Object.values(gameState.timeInZones).reduce((a, b) => a + b, 0) || 1;
+            const zonePercentages = {
+                grey: (gameState.timeInZones.grey / totalTime) * 100,
+                blue: (gameState.timeInZones.blue / totalTime) * 100,
+                green: (gameState.timeInZones.green / totalTime) * 100,
+                yellow: (gameState.timeInZones.yellow / totalTime) * 100,
+                orange: (gameState.timeInZones.orange / totalTime) * 100,
+                red: (gameState.timeInZones.red / totalTime) * 100
+            };
+            
+            // Store in game state
+            gameState.avgHeartRate = avgHeartRate;
+            gameState.splatPoints = splatPointsEarned;
+            gameState.zonePercentages = zonePercentages;
+        }
+        
+        // Update results screen with final stats
+        function updateResultsScreen() {
+            finalScore.textContent = gameState.score;
+            achievementBadge.textContent = gameState.achievement;
+            
+            // OTF Summary stats
+            splatPoints.textContent = gameState.splatPoints;
+            calories.textContent = gameState.totalCalories;
+            avgHR.textContent = `${gameState.avgHeartRate}%`;
+            
+            // Zone percentages
+            zoneGrey.style.width = `${gameState.zonePercentages.grey}%`;
+            zoneBlue.style.width = `${gameState.zonePercentages.blue}%`;
+            zoneGreen.style.width = `${gameState.zonePercentages.green}%`;
+            zoneYellow.style.width = `${gameState.zonePercentages.yellow}%`;
+            zoneOrange.style.width = `${gameState.zonePercentages.orange}%`;
+            zoneRed.style.width = `${gameState.zonePercentages.red}%`;
+            
+            // Zone times
+            orangeZoneTime.textContent = `${Math.floor(gameState.timeInZones.orange / 60)}:${(gameState.timeInZones.orange % 60).toString().padStart(2, '0')}`;
+            redZoneTime.textContent = `${Math.floor(gameState.timeInZones.red / 60)}:${(gameState.timeInZones.red % 60).toString().padStart(2, '0')}`;
+            
+            // Score breakdown
+            rowingScore.textContent = gameState.phaseScores[0];
+            floorScore.textContent = gameState.phaseScores[1] + gameState.phaseScores[2];
+            treadmillScore.textContent = gameState.phaseScores[3];
+            perfectCount.textContent = gameState.perfectReps;
+            
+            // Update share preview
+            shareScore.textContent = gameState.score;
+            shareAchievement.textContent = gameState.achievement;
+            
+            // Determine achievement color
+            const achievementConfig = ACHIEVEMENTS.find(a => a.name === gameState.achievement);
+            if (achievementConfig) {
+                achievementBadge.style.backgroundColor = achievementConfig.color;
+            }
+        }
+        
+        // Show email modal
+        function showEmailModal() {
+            modalScore.textContent = gameState.score;
+            emailModal.classList.add('active');
+        }
+        
+        // Close email modal
+        function closeEmailModal() {
+            emailModal.classList.remove('active');
+            // Show results screen
+            showScreen('results-screen');
+        }
+        
+        // Submit email from modal
+        function submitModalEmail() {
+            const email = modalEmailInput.value.trim();
+            
+            if (email && email.includes('@')) {
+                // Copy to main email input
+                emailInput.value = email;
+                
+                // Submit
+                submitScore(email);
+                
+                // Close modal and show results
+                closeEmailModal();
+            } else {
+                alert('Please enter a valid email address');
+            }
+        }
+        
+        // Determine player achievement
+        function determineAchievement() {
+            // Find highest achievement based on score
+            let highestAchievement = ACHIEVEMENTS[0];
+            
+            for (const achievement of ACHIEVEMENTS) {
+                if (gameState.score >= achievement.threshold) {
+                    highestAchievement = achievement;
+                } else {
+                    break;
+                }
+            }
+            
+            gameState.achievement = highestAchievement.name;
+        }
+        
+        // Stop the game
+        function stopGame() {
+            clearInterval(gameInterval);
+            clearInterval(heartRateInterval);
+            clearInterval(optimalTapInterval);
+            gameState.isPlaying = false;
+        }
+        
+        // Submit score
+        function submitScore(emailValue) {
+            const email = emailValue || emailInput.value.trim();
+            
+            if (email && email.includes('@')) {
+                alert(`Thank you! Your score of ${gameState.score} has been submitted.`);
+                
+                // In a real implementation, this would send data to a server
+                console.log(`Score submitted: ${gameState.score}, Email: ${email}, Achievement: ${gameState.achievement}`);
+                
+                // Disable button
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitted!';
+                
+                return true;
+            } else if (!emailValue) {
+                // Only show alert if called from button click
+                alert('Please enter a valid email address');
+            }
+            
+            return false;
+        }
+        
+        // Challenge a friend
+        function challengeFriend() {
+            const message = `I scored ${gameState.score} points and earned "${gameState.achievement}" in the OrangeTheory DriTri Challenge! Can you beat my score?`;
+            
+            // On mobile, try to use share API if available
+            if (navigator.share) {
+                navigator.share({
+                    title: 'OrangeTheory DriTri Challenge',
+                    text: message,
+                    url: window.location.href
+                }).then(() => {
+                    console.log('Shared successfully');
+                }).catch(err => {
+                    console.log('Share failed:', err);
+                    alert(message);
+                });
+            } else {
+                // Fallback
+                alert(`Challenge your friends with this message:\n\n${message}`);
+            }
+        }
+        
+        // Share to Instagram
+        function shareToInstagram() {
+            alert('In a production version, this would generate an Instagram story with your score card!');
+        }
+        
+        // Initialize the game when the page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
